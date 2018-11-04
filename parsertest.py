@@ -1,30 +1,16 @@
 import urllib.request
-import re
 from bs4 import BeautifulSoup
-import unicodedata
 import sqlite3
 
-#DB stuff
-#def BS():
-conn=sqlite3.connect('IScourses.db')
-print("Connection opened")
 
-cur=conn.cursor()
-
-cur.execute('DROP TABLE IF EXISTS InfoSystems') #drop existing table
-#make new table
-cur.execute('''CREATE TABLE InfoSystems (courseCode TEXT,CNum INTEGER, noCost TEXT, reserve TEXT, notes TEXT, \
-type TEXT, Days TEXT, Time TEXT, openSeats TEXT, Location TEXT, Professor TEXT, comment TEXT);''')
-
-#beautiful soup stuff
-address = "http://web.csulb.edu/depts/enrollment/registration/class_schedule/Spring_2019/By_Subject/IzS.html"
+#----------------------beautiful soup stuff-----------------------------
+address = "http://web.csulb.edu/depts/enrollment/registration/class_schedule/Spring_2019/By_Subject/ACCT.html"
 response = urllib.request.urlopen(address)
 bytes = response.read()
 text = bytes.decode()
 
-htmlText = open("csulbhtml.txt", "w")
 
-soup = BeautifulSoup(text, 'html5lib')
+soup = BeautifulSoup(text, 'html.parser')
 
 courseCode=soup.select("[class~=courseCode]")
 courseTitle=soup.select("[class~=courseTitle]")
@@ -65,11 +51,23 @@ for n, i in enumerate(classesList):
         classesList[n] = None
     elif i == '\xa0':
         classesList[n] = None
-        
+
+#-------------------------DB stuff-----------------------------------------
+tableName = 'INFOSYSTEMS'
+conn=sqlite3.connect(tableName + '.db')
+print("Connection opened")
+
+cur=conn.cursor()
+
+cur.execute('DROP TABLE IF EXISTS ' + tableName) #drop existing table
+#make new table
+cur.execute('CREATE TABLE ' + tableName+ ' (courseCode TEXT,CNum INTEGER, noCost TEXT, reserve TEXT, notes TEXT, \
+type TEXT, Days TEXT, Time TEXT, openSeats TEXT, Location TEXT, Professor TEXT, comment TEXT);')
+
 #loops to add each course into a DB
 i=0
 while i <len(classesList):
-    cur.execute('INSERT INTO InfoSystems VALUES(?,?,?,?,?,?,?,?,?,?,?, ?)' , [classesList[i],
+    cur.execute('INSERT INTO ' + tableName+ ' VALUES(?,?,?,?,?,?,?,?,?,?,?, ?)' , [classesList[i],
                                                                             classesList[i+1],
                                                                             classesList[i+2],
                                                                             classesList[i+3],
@@ -84,9 +82,9 @@ while i <len(classesList):
     i+=12
 
 conn.commit()
-cur = conn.execute("SELECT CNum, professor from InfoSystems where courseCode='I S 300'")
+cur = conn.execute("SELECT * from " + tableName + "")
 for row in cur:
     print(row)
 
 conn.close()
-htmlText.close()
+print("connection closed")
