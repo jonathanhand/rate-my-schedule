@@ -3,11 +3,33 @@ from bs4 import BeautifulSoup
 import sqlite3
 
 def main():
-    csulbCourseCodes = ['ACCT', 'IzS']
+    csulbCourseCodes = getCodeNames()
     for code in csulbCourseCodes:
         class_list = bsParser(code)
         courseDB(code, class_list)
+
+def getCodeNames():
+    #----------------------gets all code names from index page-----------------------------
+    address = "http://web.csulb.edu/depts/enrollment/registration/class_schedule/Spring_2019/By_Subject/index.html"
+    response = urllib.request.urlopen(address)
+    bytes = response.read()
+    text = bytes.decode()
+
+    soup = BeautifulSoup(text, 'html.parser')
+
     
+    courseLinkDiv = soup.find_all('div', 'indexList') #gets courseblock divs
+    courseCodeCSV=[]
+    for div in courseLinkDiv: #loops all courseblocks
+        
+        codeLink = div.find_all('a', href=True)
+        for link in codeLink:
+                string = link['href']
+                if string != '#':
+                        stripped = string.strip('.html')
+                        courseCodeCSV.append(stripped)
+    return courseCodeCSV
+
 def bsParser(eA):
     #----------------------beautiful soup stuff-----------------------------
     endAddress = eA
@@ -18,15 +40,11 @@ def bsParser(eA):
     text = bytes.decode()
 
     soup = BeautifulSoup(text, 'html.parser')
-
-
-
-
+    
 
     courseBlockDivs = soup.find_all('div', 'courseBlock') #gets courseblock divs
     classesList = []
     counter=0
-
 
     for div in courseBlockDivs: #loops all courseblocks
         
@@ -86,8 +104,9 @@ def courseDB (tN, c_l):
 
     conn.commit()
     cur = conn.execute("SELECT * from " + tableName + "")
-    for row in cur:
-        print(row)
+    #for row in cur:
+        #print(row)
+    #took this print statement out because already tested and takes forever to print every class at CSULB
 
     conn.close()
     print("connection closed")
