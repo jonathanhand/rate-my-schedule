@@ -17,19 +17,10 @@ def bsParser(eA):
     bytes = response.read()
     text = bytes.decode()
 
-
     soup = BeautifulSoup(text, 'html.parser')
 
-    courseCode=soup.select("[class~=courseCode]")
-    courseTitle=soup.select("[class~=courseTitle]")
 
 
-    table = soup.find_all('table', 'sectionTable')
-    divCourseHeader = soup.find('div', 'courseHeader')
-    siblingHeader = divCourseHeader.next_child
-    spanCode = soup.find('span', 'courseCode')
-    nextSpan = spanCode.find_next('span', 'courseCode')
-    allCourseCodeDiv = soup.find_all('div', 'courseHeader')
 
 
     courseBlockDivs = soup.find_all('div', 'courseBlock') #gets courseblock divs
