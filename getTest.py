@@ -6,7 +6,7 @@ import sqlite3
 
 
 def main():
-    rowsNum = 4559
+    rowsNum = 4640
     ratingList = requestRatings(rowsNum)
     ratingsDB(ratingList, rowsNum)
 
@@ -22,18 +22,19 @@ def ratingsDB (r_l, r_n):
     cur.execute('DROP TABLE IF EXISTS ' + tableName) #drop existing table
     #make new table
     cur.execute('CREATE TABLE ' + tableName + ' (lastName TEXT,profNum INTEGER, schoolCode INTEGER, totRating FLOAT, \
-    numRatings INTEGER, firstName TEXT);')
+    numRatings INTEGER, firstName TEXT, lastWithInitial);')
 
     #loops to add each course into a DB
     i=0
     while (i < rowsNum*6):
-        cur.execute('INSERT INTO ' + tableName + ' VALUES(?,?,?,?,?,?)' , [ratingList[i],
+        cur.execute('INSERT INTO ' + tableName + ' VALUES(?,?,?,?,?,?,?)' , [ratingList[i],
                                                                                 ratingList[i+1],
                                                                                 ratingList[i+2],
                                                                                 ratingList[i+3],
                                                                                 ratingList[i+4],
-                                                                                ratingList[i+5]]);
-        i+=6
+                                                                                ratingList[i+5],
+                                                                                ratingList[i+6]]);
+        i+=7
     print(i)
     print(rowsNum)
 
@@ -95,6 +96,7 @@ def requestRatings(rowInt):
             split1=line.rsplit(':"')[1]
             split2=split1.split('"')[0]
             ratingList.append(split2)
+            lastName = split2
         elif 'pk_id' in line:
             i+=1
 
@@ -117,5 +119,9 @@ def requestRatings(rowInt):
             split1=line.rsplit(':"')[1]
             split2=split1.split('"')[0]
             ratingList.append(split2)
+            if len(split2) >0:
+                ratingList.append(lastName + " " + split2[0])
+            else:
+                ratingList.append(None)
     return ratingList
 main()

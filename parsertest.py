@@ -79,6 +79,9 @@ def courseDB (tN, c_l):
     conn=sqlite3.connect('csulbCourses.db')
     print("Connection opened")
 
+
+        
+
     cur=conn.cursor()
     cur.execute('DROP TABLE IF EXISTS ' + tableName) #drop existing table
     #make new table
@@ -88,7 +91,7 @@ def courseDB (tN, c_l):
     #loops to add each course into a DB
     i=0
     while i <len(classesList):
-        cur.execute('INSERT INTO ' + tableName + ' VALUES(?,?,?,?,?,?,?,?,?,?,?, ?)' , [classesList[i],
+        cur.execute('INSERT INTO ' + tableName + ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?)' , [classesList[i],
                                                                                 classesList[i+1],
                                                                                 classesList[i+2],
                                                                                 classesList[i+3],
@@ -99,7 +102,8 @@ def courseDB (tN, c_l):
                                                                                 classesList[i+8],
                                                                                 classesList[i+9],
                                                                                 classesList[i+10],
-                                                                               classesList[i+11]]);
+                                                                                classesList[i+11],
+                                                                               ]);
         i+=12
 
     conn.commit()
