@@ -4,9 +4,17 @@ import sqlite3
 
 def main():
     csulbCourseCodes = getCodeNames()
+    conn=sqlite3.connect('csulbCourses.db')
+    cur=conn.cursor()
+    tableName = 'springSchedule'
+    cur.execute('DROP TABLE IF EXISTS ' + tableName) #drop existing table
+    #make new table
+    cur.execute('CREATE TABLE ' + tableName + ' (courseCode TEXT, courseTitle TEXT, CNum INTEGER, noCost TEXT, reserve TEXT, notes TEXT, \
+    type TEXT, Days TEXT, Time TEXT, openSeats TEXT, Location TEXT, Professor TEXT, comment TEXT, department TEXT);')
+
     for code in csulbCourseCodes:
         class_list = bsParser(code)
-        courseDB(code, class_list)
+        courseDB(code, class_list, tableName)
 
 def getCodeNames():
     #----------------------gets all code names from index page-----------------------------
@@ -49,6 +57,7 @@ def bsParser(eA):
     for div in courseBlockDivs: #loops all courseblocks
         
         courseCodeSpan = div.find('span', 'courseCode').get_text()
+        courseTitleSpan = div.find('span', 'courseTitle').get_text()
         sectionTable = div.find('table', 'sectionTable')
         trRows = sectionTable.find_all('tr')
         counter=0
@@ -56,6 +65,7 @@ def bsParser(eA):
             counter+=1
             if counter > 1:
                 classesList.append(courseCodeSpan)
+                classesList.append(courseTitleSpan)
             tdRows = row.find_all('td') #find all td in table
             for i in tdRows: #loops through each indiviudal td
                 classesList.append(i.get_text()) #adds text in each td to a list
@@ -73,7 +83,8 @@ def bsParser(eA):
 
 
 #-------------------------DB stuff-----------------------------------------
-def courseDB (tN, c_l):
+def courseDB (dN, c_l, tN):
+    department = dN
     tableName = tN
     classesList = c_l
     conn=sqlite3.connect('csulbCourses.db')
@@ -83,15 +94,11 @@ def courseDB (tN, c_l):
         
 
     cur=conn.cursor()
-    cur.execute('DROP TABLE IF EXISTS ' + tableName) #drop existing table
-    #make new table
-    cur.execute('CREATE TABLE ' + tableName + ' (courseCode TEXT,CNum INTEGER, noCost TEXT, reserve TEXT, notes TEXT, \
-    type TEXT, Days TEXT, Time TEXT, openSeats TEXT, Location TEXT, Professor TEXT, comment TEXT);')
-
+    
     #loops to add each course into a DB
     i=0
     while i <len(classesList):
-        cur.execute('INSERT INTO ' + tableName + ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?)' , [classesList[i],
+        cur.execute('INSERT INTO ' + tableName + ' VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)' , [classesList[i],
                                                                                 classesList[i+1],
                                                                                 classesList[i+2],
                                                                                 classesList[i+3],
@@ -103,8 +110,9 @@ def courseDB (tN, c_l):
                                                                                 classesList[i+9],
                                                                                 classesList[i+10],
                                                                                 classesList[i+11],
-                                                                               ]);
-        i+=12
+                                                                                classesList[i+12],
+                                                                                department]);
+        i+=13
 
     conn.commit()
     cur = conn.execute("SELECT * from " + tableName + "")
